@@ -7,9 +7,9 @@ const CESG_ANNUAL_MAX = 500
 const CESG_LIFETIME_MAX = 7200
 
 const PRESETS = [
-  { label: 'S&P 500 (VFV)', roi: 10.5, mer: 0.09, info: 'Tracks the 500 largest US companies. Includes Apple, Microsoft, Amazon, Google, etc. 30-year average return ~10.5%. Extremely diversified across US large-cap. VFV trades in CAD on the TSX. MER of 0.09% means you pay $0.90 per $1,000 invested annually.' },
-  { label: 'Nasdaq 100 (QQC)', roi: 14.5, mer: 0.25, info: 'Tracks the 100 largest non-financial Nasdaq companies. Heavy tech: Apple, Microsoft, Nvidia, Meta, Google, Amazon, Tesla. 30-year average ~14.5% but more volatile. QQC trades in CAD on the TSX. MER of 0.25% means $2.50 per $1,000 annually.' },
-  { label: 'Balanced Growth (VGRO)', roi: 8.5, mer: 0.24, info: 'Vanguard Growth ETF. 80% stocks / 20% bonds. All-in-one portfolio: holds Canadian, US, international stocks plus Canadian and global bonds. Less volatile than pure equity. 5-year average ~8.5%. Automatically rebalances. Great "set and forget" option. MER of 0.24% means $2.40 per $1,000 annually. Popular choice for RESPs due to built-in diversification.' },
+  { label: 'S&P 500 (VFV)', roi: 10.5, mer: 0.09, info: 'Tracks the 500 largest US companies. Includes Apple, Microsoft, Amazon, Google, etc. 30-year average return ~10.5%. VFV trades in CAD on the TSX. MER of 0.09%. Drawdowns: -34% in 2008 (recovered in 4 years), -20% in 2022 (recovered in 2 years), -34% in 2020 COVID crash (recovered in 5 months). Expect a 10-20% drop roughly every 3-5 years. With a 30+ year horizon, every crash has fully recovered.' },
+  { label: 'Nasdaq 100 (QQC)', roi: 14.5, mer: 0.25, info: 'Tracks the 100 largest non-financial Nasdaq companies. Heavy tech: Apple, Microsoft, Nvidia, Meta, Google, Amazon, Tesla. 30-year average ~14.5%. QQC trades in CAD on the TSX. MER of 0.25%. Drawdowns: -80% in 2000 dot-com crash (took 15 years to recover), -33% in 2022, -30% in 2020 (recovered in 4 months). Most volatile option. Higher ceiling but rougher ride. Only appropriate if you will not sell during crashes.' },
+  { label: 'Balanced Growth (VGRO)', roi: 8.5, mer: 0.24, info: 'Vanguard Growth ETF. 80% stocks / 20% bonds across Canadian, US, and international markets. 5-year average ~8.5%. Auto-rebalances. MER of 0.24%. Drawdowns: -22% in 2020 (recovered in 6 months), -15% in 2022. The bond allocation cushions crashes but caps upside. Smoothest ride of the three. Good "set and forget" if you want less stress.' },
   { label: 'Custom', roi: 0, mer: 0, info: '' },
 ]
 
