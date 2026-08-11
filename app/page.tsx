@@ -208,7 +208,7 @@ export default function RespMaxPage() {
         <h2 className="text-lg font-bold mb-2 mt-12">What Happens at Withdrawal?</h2>
         <p className="text-gray-500 text-sm mb-6">Same RESP balance, three different life paths. Tax impact changes everything.</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
           {(() => {
             const balance = active.finalBalance
             const contributions = 50000
@@ -235,7 +235,28 @@ export default function RespMaxPage() {
             const penaltyTax = growth * 0.53 // Marginal + 20% penalty
             const netCollapse = contributions + (growth - penaltyTax)
 
+            // Scenario 4: Optimal (MBA at 33, withdraw 33-34, 1 year buffer before 35)
+            const balanceAt33 = active.rows.find(r => r.age === 33)?.balance ?? 0
+            const growthAt33 = balanceAt33 - contributions - cesg
+            const eapAt33 = growthAt33 + cesg
+            // Split over 2 years, take year off work to lower bracket
+            const taxAt33 = eapAt33 * 0.30 // Lower bracket: no employment income during withdrawal years
+            const netAt33 = balanceAt33 - taxAt33
+
             return [
+              {
+                title: 'Optimal: MBA at 33',
+                subtitle: 'Maximum growth. Enroll at 33, withdraw over 2 years. No employment income during withdrawals.',
+                icon: '💎',
+                balance: balanceAt33,
+                taxRate: '~30%',
+                taxPaid: taxAt33,
+                cesgKept: true,
+                net: netAt33,
+                color: 'green',
+                note: 'Latest safe enrollment (1 year buffer before 35). Quit or pause work during withdrawals to stay in lower brackets. Maximum compound time + lowest realistic tax rate.',
+                optimal: true,
+              },
               {
                 title: 'School at 20',
                 subtitle: 'Undergrad, withdraw as student',
@@ -246,7 +267,7 @@ export default function RespMaxPage() {
                 cesgKept: true,
                 net: netAt20,
                 color: 'green',
-                note: 'Low tax bracket as full-time student. Keeps all CESG.',
+                note: 'Lowest tax rate but smallest balance. 15 fewer years of compound growth.',
               },
               {
                 title: 'MBA at 30',
@@ -258,7 +279,7 @@ export default function RespMaxPage() {
                 cesgKept: true,
                 net: netAt30,
                 color: 'blue',
-                note: 'Higher bracket (working + EAP income). But balance grew 10 more years. Keeps all CESG. Use for home/car.',
+                note: 'Good balance of growth and access. Use for home/car. Still working so higher bracket.',
               },
               {
                 title: 'Collapse at 35',
@@ -273,14 +294,15 @@ export default function RespMaxPage() {
                 note: `CESG (${formatCAD(cesgReturned)}) returned to government. Growth taxed at marginal rate + 20% penalty. Worst outcome.`,
               },
             ].map(s => (
-              <div key={s.title} className={`rounded-xl border p-5 ${s.color === 'green' ? 'border-green-200' : s.color === 'blue' ? 'border-blue-200' : 'border-red-200'}`}>
-                <div className="flex items-center gap-2 mb-3">
+              <div key={s.title} className={`rounded-xl border p-5 ${s.optimal ? 'border-green-400 bg-green-50 ring-2 ring-green-400' : s.color === 'green' ? 'border-green-200' : s.color === 'blue' ? 'border-blue-200' : 'border-red-200'}`}>
+                <div className="flex items-center gap-2 mb-2">
                   <span className="text-xl">{s.icon}</span>
                   <div>
                     <p className="text-sm font-semibold">{s.title}</p>
                     <p className="text-xs text-gray-500">{s.subtitle}</p>
                   </div>
                 </div>
+                {s.optimal && <span className="inline-block mb-3 text-xs font-medium bg-green-200 text-green-800 px-2 py-0.5 rounded-full">Recommended: Max cash in hand</span>}
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-500">RESP Balance</span>
