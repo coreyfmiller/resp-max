@@ -215,24 +215,52 @@ export default function RespMaxPage() {
             const cesg = active.totalCESG
             const growth = balance - contributions - cesg
 
+            // Progressive NB tax calculator (combined federal + provincial, 2024 rates)
+            const calcProgressiveTax = (income: number) => {
+              let tax = 0
+              const brackets = [
+                { limit: 15705, rate: 0 },
+                { limit: 55867, rate: 0.244 },
+                { limit: 111733, rate: 0.304 },
+                { limit: 154906, rate: 0.36 },
+                { limit: 221708, rate: 0.42 },
+                { limit: Infinity, rate: 0.528 },
+              ]
+              let prev = 0
+              for (const b of brackets) {
+                const taxable = Math.min(income, b.limit) - prev
+                if (taxable > 0) tax += taxable * b.rate
+                prev = b.limit
+                if (income <= b.limit) break
+              }
+              return tax
+            }
+
             // Scenario 1: School at 20 (withdraw during undergrad over 4 years)
             const balanceAt20 = active.valueAt18
             const growthAt20 = Math.max(0, balanceAt20 - contributions - cesg)
             const eapAt20 = growthAt20 + cesg
-            const taxAt20 = eapAt20 * 0.20 // Low bracket as student
+            const taxAt20 = calcProgressiveTax(eapAt20 / 4) * 4 // Spread over 4 years as student
+            const effectiveTaxAt20 = eapAt20 > 0 ? Math.round((taxAt20 / eapAt20) * 100) : 0
             const netAt20 = contributions + (eapAt20 - taxAt20)
 
             // Scenario 2: Collapse at 35 (no school ever)
             const cesgReturned = cesg
-            const penaltyTax = growth * 0.53 // Marginal + 20% penalty
+            // AIP: taxed at marginal + 20% penalty
+            const aipTaxPerYear = calcProgressiveTax(growth / 3) * 3
+            const penaltyTax = aipTaxPerYear + (growth * 0.20) // Regular tax + 20% additional penalty
+            const effectiveTaxCollapse = growth > 0 ? Math.round((penaltyTax / growth) * 100) : 0
             const netCollapse = contributions + Math.max(0, growth - penaltyTax) // Contributions back tax-free, growth hammered
 
             // Scenario 3: Optimal (Enroll part-time at 32, withdraw over 3 years 32-34, buffer before 35)
             const balanceAt32 = active.valueAt32
             const growthAt32 = Math.max(0, balanceAt32 - contributions - cesg)
             const eapAt32 = growthAt32 + cesg
-            // Split over 3 years, reduce work to lower bracket
-            const taxAt32 = eapAt32 * 0.28 // Lower bracket: reduced/no employment income during withdrawal years
+            // Progressive tax on EAP split over 3 years (no employment income assumed)
+            const annualEAP = eapAt32 / 3
+            const taxPerYear = calcProgressiveTax(annualEAP)
+            const taxAt32 = taxPerYear * 3
+            const effectiveTaxRate = Math.round((taxAt32 / eapAt32) * 100)
             const netAt32 = contributions + (eapAt32 - taxAt32)
 
             // Sort by net cash: lowest to highest
@@ -242,7 +270,7 @@ export default function RespMaxPage() {
                 subtitle: 'Never enrolled in school',
                 icon: '⚠️',
                 balance: balance,
-                taxRate: '~53%',
+                taxRate: `~${effectiveTaxCollapse}%`,
                 taxPaid: penaltyTax,
                 cesgKept: false,
                 net: netCollapse,
@@ -252,15 +280,15 @@ export default function RespMaxPage() {
               },
               {
                 title: 'School at 20',
-                subtitle: 'Undergrad, withdraw as student',
+                subtitle: 'Undergrad, withdraw over 4 years as student',
                 icon: '🎓',
                 balance: balanceAt20,
-                taxRate: '~20%',
+                taxRate: `~${effectiveTaxAt20}%`,
                 taxPaid: taxAt20,
                 cesgKept: true,
                 net: netAt20,
                 color: 'green',
-                note: 'Lowest tax rate but smallest balance. 15 fewer years of compound growth.',
+                note: 'Low bracket as full-time student with no other income. Smallest balance due to fewer years of growth.',
                 optimal: false,
               },
               {
@@ -268,12 +296,12 @@ export default function RespMaxPage() {
                 subtitle: 'Enroll in part-time MBA or additional schooling at 32. Withdraw over 3 years (32-34).',
                 icon: '💎',
                 balance: balanceAt32,
-                taxRate: '~28%',
+                taxRate: `~${effectiveTaxRate}%`,
                 taxPaid: taxAt32,
                 cesgKept: true,
                 net: netAt32,
                 color: 'green',
-                note: 'Enroll part-time at 32, stay enrolled through 34. Reduce or pause employment income during withdrawals to lower tax brackets. 1 year buffer before mandatory close at 35.',
+                note: `Enroll part-time at 32, stay enrolled through 34. ${formatCAD(annualEAP)}/yr EAP income over 3 years (no employment income). 1 year buffer before mandatory close at 35.`,
                 optimal: true,
               },
             ].sort((a, b) => a.net - b.net)
