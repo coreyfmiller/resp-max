@@ -319,8 +319,8 @@ export default function RespMaxPage() {
                     <span className="font-semibold">{formatCAD(s.balance)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Income Tax</span>
-                    <span className="font-medium">{s.taxRate}</span>
+                    <span className="text-gray-500">Income Tax ({s.taxRate})</span>
+                    <span className="font-medium text-red-600">-{formatCAD(s.taxPaid - s.penalty)}</span>
                   </div>
                   {s.penalty > 0 && (
                     <div className="flex justify-between">
@@ -329,12 +329,12 @@ export default function RespMaxPage() {
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Total Tax</span>
-                    <span className="font-medium text-red-600">-{formatCAD(s.taxPaid)}</span>
-                  </div>
-                  <div className="flex justify-between">
                     <span className="text-gray-500">CESG</span>
                     <span className={s.cesgKept ? 'text-green-600' : 'text-red-600'}>{s.cesgKept ? 'Kept' : 'Returned to gov'}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-gray-100">
+                    <span className="font-semibold">Total Tax Paid</span>
+                    <span className="font-bold text-red-600">-{formatCAD(s.taxPaid)}</span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-gray-100">
                     <span className="font-semibold">Cash in Hand</span>
