@@ -205,6 +205,111 @@ export default function RespMaxPage() {
           </table>
         </div>
 
+        {/* Withdrawal Scenarios */}
+        <h2 className="text-lg font-bold mb-2 mt-12">What Happens at Withdrawal?</h2>
+        <p className="text-gray-500 text-sm mb-6">Same RESP balance, three different life paths. Tax impact changes everything.</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {(() => {
+            const balance = active.finalBalance
+            const contributions = 50000
+            const cesg = active.totalCESG
+            const growth = balance - contributions - cesg
+
+            // Scenario 1: School at 20 (withdraw during undergrad over 4 years)
+            const balanceAt20 = active.valueAt18
+            const growthAt20 = balanceAt20 - contributions - cesg
+            const eapAt20 = growthAt20 + cesg
+            const taxAt20 = eapAt20 * 0.20 // Low bracket as student
+            const netAt20 = balanceAt20 - taxAt20
+
+            // Scenario 2: MBA at 30 (withdraw at 30-32)
+            const balanceAt30 = active.rows.find(r => r.age === 30)?.balance ?? 0
+            const growthAt30 = balanceAt30 - contributions - cesg
+            const eapAt30 = growthAt30 + cesg
+            const taxAt30 = eapAt30 * 0.35 // Mid bracket, working professional
+            const netAt30 = balanceAt30 - taxAt30
+
+            // Scenario 3: Collapse at 35 (no school ever)
+            const eapCollapse = growth + cesg
+            const cesgReturned = cesg
+            const penaltyTax = growth * 0.53 // Marginal + 20% penalty
+            const netCollapse = contributions + (growth - penaltyTax)
+
+            return [
+              {
+                title: 'School at 20',
+                subtitle: 'Undergrad, withdraw as student',
+                icon: '🎓',
+                balance: balanceAt20,
+                taxRate: '~20%',
+                taxPaid: taxAt20,
+                cesgKept: true,
+                net: netAt20,
+                color: 'green',
+                note: 'Low tax bracket as full-time student. Keeps all CESG.',
+              },
+              {
+                title: 'MBA at 30',
+                subtitle: 'Enroll at 30, withdraw over 3 years',
+                icon: '🏠',
+                balance: balanceAt30,
+                taxRate: '~35%',
+                taxPaid: taxAt30,
+                cesgKept: true,
+                net: netAt30,
+                color: 'blue',
+                note: 'Higher bracket (working + EAP income). But balance grew 10 more years. Keeps all CESG. Use for home/car.',
+              },
+              {
+                title: 'Collapse at 35',
+                subtitle: 'Never enrolled in school',
+                icon: '⚠️',
+                balance: balance,
+                taxRate: '~53%',
+                taxPaid: penaltyTax,
+                cesgKept: false,
+                net: netCollapse,
+                color: 'red',
+                note: `CESG (${formatCAD(cesgReturned)}) returned to government. Growth taxed at marginal rate + 20% penalty. Worst outcome.`,
+              },
+            ].map(s => (
+              <div key={s.title} className={`rounded-xl border p-5 ${s.color === 'green' ? 'border-green-200' : s.color === 'blue' ? 'border-blue-200' : 'border-red-200'}`}>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xl">{s.icon}</span>
+                  <div>
+                    <p className="text-sm font-semibold">{s.title}</p>
+                    <p className="text-xs text-gray-500">{s.subtitle}</p>
+                  </div>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">RESP Balance</span>
+                    <span className="font-semibold">{formatCAD(s.balance)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Effective Tax Rate</span>
+                    <span className="font-medium">{s.taxRate}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Tax Paid</span>
+                    <span className="font-medium text-red-600">-{formatCAD(s.taxPaid)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">CESG</span>
+                    <span className={s.cesgKept ? 'text-green-600' : 'text-red-600'}>{s.cesgKept ? 'Kept' : 'Returned to gov'}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-gray-100">
+                    <span className="font-semibold">Cash in Hand</span>
+                    <span className={`font-bold ${s.color === 'red' ? 'text-red-700' : 'text-green-700'}`}>{formatCAD(s.net)}</span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 mt-3">{s.note}</p>
+              </div>
+            ))
+          })()}
+        </div>
+
         {/* Footnotes */}
         <div className="space-y-2 text-xs text-gray-400 text-center">
           <p>{effectiveRoi.toFixed(2)}% effective annual return ({roi}% gross - {mer}% MER) compounded monthly.</p>
