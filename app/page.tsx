@@ -7,7 +7,7 @@ const CESG_ANNUAL_MAX = 500
 const CESG_LIFETIME_MAX = 7200
 
 const PRESETS = [
-  { label: 'S&P 500 (VFV/ZSP)', roi: 10.5, mer: 0.09, info: 'Tracks the 500 largest US companies. Includes Apple, Microsoft, Amazon, Google, etc. 30-year average return ~10.5%. Extremely diversified across US large-cap. VFV and ZSP trade in CAD on the TSX. MER of 0.09% means you pay $0.90 per $1,000 invested annually.' },
+  { label: 'S&P 500 (VFV)', roi: 10.5, mer: 0.09, info: 'Tracks the 500 largest US companies. Includes Apple, Microsoft, Amazon, Google, etc. 30-year average return ~10.5%. Extremely diversified across US large-cap. VFV trades in CAD on the TSX. MER of 0.09% means you pay $0.90 per $1,000 invested annually.' },
   { label: 'Nasdaq 100 (QQC)', roi: 14.5, mer: 0.25, info: 'Tracks the 100 largest non-financial Nasdaq companies. Heavy tech: Apple, Microsoft, Nvidia, Meta, Google, Amazon, Tesla. 30-year average ~14.5% but more volatile. QQC trades in CAD on the TSX. MER of 0.25% means $2.50 per $1,000 annually.' },
   { label: 'Balanced Growth (VGRO)', roi: 8.5, mer: 0.24, info: 'Vanguard Growth ETF. 80% stocks / 20% bonds. All-in-one portfolio: holds Canadian, US, international stocks plus Canadian and global bonds. Less volatile than pure equity. 5-year average ~8.5%. Automatically rebalances. Great "set and forget" option. MER of 0.24% means $2.40 per $1,000 annually. Popular choice for RESPs due to built-in diversification.' },
   { label: 'Custom', roi: 0, mer: 0, info: '' },
@@ -73,7 +73,7 @@ function buildProjection(schedule: number[], effectiveRoi: number) {
 export default function RespMaxPage() {
   const [roi, setRoi] = useState(10.5)
   const [mer, setMer] = useState(0.09)
-  const [activePreset, setActivePreset] = useState('S&P 500 (SPY)')
+  const [activePreset, setActivePreset] = useState('S&P 500 (VFV)')
   const [activeStrategy, setActiveStrategy] = useState('aggressive')
   const effectiveRoi = roi - mer
 
