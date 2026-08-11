@@ -247,8 +247,11 @@ export default function RespMaxPage() {
             // Scenario 2: Collapse at 35 (no school ever)
             const cesgReturned = cesg
             // AIP: taxed at marginal + 20% penalty
-            const aipTaxPerYear = calcProgressiveTax(growth / 3) * 3
-            const penaltyTax = aipTaxPerYear + (growth * 0.20) // Regular tax + 20% additional penalty
+            // CRA treats AIP as regular income (marginal tax) plus Part X.5 tax (flat 20% on AIP amount)
+            const aipIncomeTax = calcProgressiveTax(growth / 3) * 3 // Progressive income tax spread over 3 years
+            const aipPenalty = growth * 0.20 // Flat 20% additional penalty
+            const penaltyTax = aipIncomeTax + aipPenalty
+            const incomeTaxRate = growth > 0 ? Math.round((aipIncomeTax / growth) * 100) : 0
             const effectiveTaxCollapse = growth > 0 ? Math.round((penaltyTax / growth) * 100) : 0
             const netCollapse = contributions + Math.max(0, growth - penaltyTax) // Contributions back tax-free, growth hammered
 
@@ -270,13 +273,13 @@ export default function RespMaxPage() {
                 subtitle: 'Never enrolled in school',
                 icon: '⚠️',
                 balance: balance,
-                taxRate: `~${Math.round((aipTaxPerYear * 3) / growth * 100)}%`,
-                penalty: growth * 0.20,
+                taxRate: `~${incomeTaxRate}%`,
+                penalty: aipPenalty,
                 taxPaid: penaltyTax,
                 cesgKept: false,
                 net: netCollapse,
                 color: 'red',
-                note: `CESG (${formatCAD(cesgReturned)}) returned to government. Growth taxed at your marginal rate (~${Math.round((aipTaxPerYear * 3) / growth * 100)}%) PLUS an additional 20% penalty tax = ~${effectiveTaxCollapse}% combined. This is intentional: CRA penalizes non-educational use.`,
+                note: `CESG (${formatCAD(cesgReturned)}) returned to government. Growth taxed at marginal rate (~${incomeTaxRate}%) plus 20% CRA penalty = ~${effectiveTaxCollapse}% effective. This is intentional: CRA penalizes non-educational use.`,
                 optimal: false,
               },
               {
