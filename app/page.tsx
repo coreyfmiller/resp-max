@@ -275,7 +275,7 @@ export default function RespMaxPage() {
                 cesgKept: false,
                 net: netCollapse,
                 color: 'red',
-                note: `CESG (${formatCAD(cesgReturned)}) returned to government. Growth taxed at marginal rate + 20% penalty. Worst outcome.`,
+                note: `CESG (${formatCAD(cesgReturned)}) returned to government. Growth taxed at your marginal rate (~44%) PLUS an additional 20% penalty tax = ~${effectiveTaxCollapse}% combined. This is intentional: CRA penalizes non-educational use.`,
                 optimal: false,
               },
               {
