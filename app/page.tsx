@@ -7,11 +7,11 @@ const CESG_ANNUAL_MAX = 500
 const CESG_LIFETIME_MAX = 7200
 
 const PRESETS = [
-  { label: 'S&P 500 (SPY)', roi: 10.5, mer: 0.09 },
-  { label: 'Nasdaq 100 (QQQ)', roi: 14.5, mer: 0.20 },
-  { label: 'Canadian Market (XIU)', roi: 8, mer: 0.18 },
-  { label: 'Conservative', roi: 4.5, mer: 0.10 },
-  { label: 'Custom', roi: 0, mer: 0 },
+  { label: 'S&P 500 (SPY)', roi: 10.5, mer: 0.09, info: 'Tracks the 500 largest US companies. The most popular index fund in the world. Includes Apple, Microsoft, Amazon, Google, etc. 30-year average return ~10.5%. Extremely diversified across US large-cap. Currency risk for Canadians (USD denominated). MER of 0.09% means you pay $0.90 per $1,000 invested annually.' },
+  { label: 'Nasdaq 100 (QQQ)', roi: 14.5, mer: 0.20, info: 'Tracks the 100 largest non-financial companies on Nasdaq. Heavy tech weighting: Apple, Microsoft, Nvidia, Meta, Google, Amazon, Tesla. Higher growth but more volatile. 30-year average ~14.5% but with bigger drawdowns (dropped 80% in 2000, 33% in 2022). MER of 0.20% means $2 per $1,000 annually. Best for long time horizons where you can ride out crashes.' },
+  { label: 'Balanced Growth (VGRO)', roi: 8.5, mer: 0.24, info: 'Vanguard Growth ETF. 80% stocks / 20% bonds. All-in-one portfolio: holds Canadian, US, international stocks plus Canadian and global bonds. Less volatile than pure equity. 5-year average ~8.5%. Automatically rebalances. Great "set and forget" option. MER of 0.24% means $2.40 per $1,000 annually. Popular choice for RESPs due to built-in diversification.' },
+  { label: 'Canadian Market (XIU)', roi: 8, mer: 0.18, info: 'Tracks the S&P/TSX 60: Canada\'s 60 largest companies. Heavy in banks (RBC, TD, BMO), energy (Enbridge, Suncor), and railways (CN, CP). No currency risk (CAD denominated). 25-year average ~8%. Less tech exposure than US markets. MER of 0.18% means $1.80 per $1,000 annually. Home country bias but stable and dividend-heavy.' },
+  { label: 'Custom', roi: 0, mer: 0, info: '' },
 ]
 
 // Three contribution strategies, all totaling $50,000
@@ -76,6 +76,7 @@ export default function RespMaxPage() {
   const [mer, setMer] = useState(0.09)
   const [activePreset, setActivePreset] = useState('S&P 500 (SPY)')
   const [activeStrategy, setActiveStrategy] = useState('aggressive')
+  const [showInfo, setShowInfo] = useState<string | null>(null)
   const effectiveRoi = roi - mer
 
   const projections = STRATEGIES.map(s => ({
@@ -98,16 +99,34 @@ export default function RespMaxPage() {
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Investment Vehicle</p>
           <div className="flex flex-wrap gap-2">
             {PRESETS.map(p => (
-              <button
-                key={p.label}
-                onClick={() => { if (p.roi > 0) { setRoi(p.roi); setMer(p.mer); setActivePreset(p.label) } else { setActivePreset('Custom') } }}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activePreset === p.label ? 'bg-blue-600 text-white shadow-sm' : 'bg-white border border-gray-200 text-gray-700 hover:border-blue-300'}`}
-              >
-                {p.label}
-                {p.roi > 0 && <span className="ml-1 text-xs opacity-70">{p.roi}%</span>}
-              </button>
+              <div key={p.label} className="flex items-center gap-1">
+                <button
+                  onClick={() => { if (p.roi > 0) { setRoi(p.roi); setMer(p.mer); setActivePreset(p.label) } else { setActivePreset('Custom') } }}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activePreset === p.label ? 'bg-blue-600 text-white shadow-sm' : 'bg-white border border-gray-200 text-gray-700 hover:border-blue-300'}`}
+                >
+                  {p.label}
+                  {p.roi > 0 && <span className="ml-1 text-xs opacity-70">{p.roi}%</span>}
+                </button>
+                {p.info && (
+                  <button
+                    onClick={() => setShowInfo(showInfo === p.label ? null : p.label)}
+                    className="w-6 h-6 rounded-full border border-gray-300 text-gray-400 text-xs font-bold hover:border-blue-400 hover:text-blue-500 transition flex items-center justify-center"
+                    aria-label={`Info about ${p.label}`}
+                  >
+                    i
+                  </button>
+                )}
+              </div>
             ))}
           </div>
+          {showInfo && (
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900 leading-relaxed">
+              <div className="flex justify-between items-start gap-2">
+                <p>{PRESETS.find(p => p.label === showInfo)?.info}</p>
+                <button onClick={() => setShowInfo(null)} className="text-blue-400 hover:text-blue-600 text-lg leading-none shrink-0">&times;</button>
+              </div>
+            </div>
+          )}
           <div className="flex items-center gap-4">
             <input type="range" min={4} max={20} step={0.5} value={roi} onChange={e => { setRoi(Number(e.target.value)); setActivePreset('Custom') }} className="flex-1 accent-blue-600" />
             <span className="text-sm font-bold tnum w-20 text-right">{effectiveRoi.toFixed(2)}% net</span>
