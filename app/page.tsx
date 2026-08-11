@@ -227,13 +227,13 @@ export default function RespMaxPage() {
             const penaltyTax = growth * 0.53 // Marginal + 20% penalty
             const netCollapse = contributions + Math.max(0, growth - penaltyTax) // Contributions back tax-free, growth hammered
 
-            // Scenario 3: Optimal (Enroll at 33, withdraw 33-34, 1 year buffer before 35)
-            const balanceAt33 = active.rows.find(r => r.age === 33)?.balance ?? 0
-            const growthAt33 = balanceAt33 - contributions - cesg
-            const eapAt33 = growthAt33 + cesg
-            // Split over 2 years, take year off work to lower bracket
-            const taxAt33 = eapAt33 * 0.30 // Lower bracket: no employment income during withdrawal years
-            const netAt33 = contributions + (eapAt33 - taxAt33)
+            // Scenario 3: Optimal (Enroll part-time at 32, withdraw over 3 years 32-34, buffer before 35)
+            const balanceAt32 = active.valueAt32
+            const growthAt32 = Math.max(0, balanceAt32 - contributions - cesg)
+            const eapAt32 = growthAt32 + cesg
+            // Split over 3 years, reduce work to lower bracket
+            const taxAt32 = eapAt32 * 0.28 // Lower bracket: reduced/no employment income during withdrawal years
+            const netAt32 = contributions + (eapAt32 - taxAt32)
 
             // Sort by net cash: lowest to highest
             const scenarios = [
@@ -264,16 +264,16 @@ export default function RespMaxPage() {
                 optimal: false,
               },
               {
-                title: 'Enroll at 33, Withdraw by 35',
-                subtitle: 'Maximum growth. Part-time program at 33, withdraw over 2 years.',
+                title: 'Part-time MBA at 32',
+                subtitle: 'Enroll in part-time MBA or additional schooling at 32. Withdraw over 3 years (32-34).',
                 icon: '💎',
-                balance: balanceAt33,
-                taxRate: '~30%',
-                taxPaid: taxAt33,
+                balance: balanceAt32,
+                taxRate: '~28%',
+                taxPaid: taxAt32,
                 cesgKept: true,
-                net: netAt33,
+                net: netAt32,
                 color: 'green',
-                note: 'Latest safe enrollment (1 year buffer before 35). Pause work during withdrawals to stay in lower brackets. Maximum compound time + lowest realistic tax rate.',
+                note: 'Enroll part-time at 32, stay enrolled through 34. Reduce or pause employment income during withdrawals to lower tax brackets. 1 year buffer before mandatory close at 35.',
                 optimal: true,
               },
             ].sort((a, b) => a.net - b.net)
