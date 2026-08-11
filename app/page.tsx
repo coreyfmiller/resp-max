@@ -208,7 +208,7 @@ export default function RespMaxPage() {
         <h2 className="text-lg font-bold mb-2 mt-12">What Happens at Withdrawal?</h2>
         <p className="text-gray-500 text-sm mb-6">Same RESP balance, three different life paths. Tax impact changes everything.</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           {(() => {
             const balance = active.finalBalance
             const contributions = 50000
@@ -222,20 +222,13 @@ export default function RespMaxPage() {
             const taxAt20 = eapAt20 * 0.20 // Low bracket as student
             const netAt20 = balanceAt20 - taxAt20
 
-            // Scenario 2: MBA at 30 (withdraw at 30-32)
-            const balanceAt30 = active.rows.find(r => r.age === 30)?.balance ?? 0
-            const growthAt30 = balanceAt30 - contributions - cesg
-            const eapAt30 = growthAt30 + cesg
-            const taxAt30 = eapAt30 * 0.35 // Mid bracket, working professional
-            const netAt30 = balanceAt30 - taxAt30
-
-            // Scenario 3: Collapse at 35 (no school ever)
+            // Scenario 2: Collapse at 35 (no school ever)
             const eapCollapse = growth + cesg
             const cesgReturned = cesg
             const penaltyTax = growth * 0.53 // Marginal + 20% penalty
             const netCollapse = contributions + (growth - penaltyTax)
 
-            // Scenario 4: Optimal (MBA at 33, withdraw 33-34, 1 year buffer before 35)
+            // Scenario 3: Optimal (MBA at 33, withdraw 33-34, 1 year buffer before 35)
             const balanceAt33 = active.rows.find(r => r.age === 33)?.balance ?? 0
             const growthAt33 = balanceAt33 - contributions - cesg
             const eapAt33 = growthAt33 + cesg
@@ -245,17 +238,17 @@ export default function RespMaxPage() {
 
             return [
               {
-                title: 'Optimal: MBA at 33',
-                subtitle: 'Maximum growth. Enroll at 33, withdraw over 2 years. No employment income during withdrawals.',
-                icon: '💎',
-                balance: balanceAt33,
-                taxRate: '~30%',
-                taxPaid: taxAt33,
-                cesgKept: true,
-                net: netAt33,
-                color: 'green',
-                note: 'Latest safe enrollment (1 year buffer before 35). Quit or pause work during withdrawals to stay in lower brackets. Maximum compound time + lowest realistic tax rate.',
-                optimal: true,
+                title: 'Collapse at 35',
+                subtitle: 'Never enrolled in school',
+                icon: '⚠️',
+                balance: balance,
+                taxRate: '~53%',
+                taxPaid: penaltyTax,
+                cesgKept: false,
+                net: netCollapse,
+                color: 'red',
+                note: `CESG (${formatCAD(cesgReturned)}) returned to government. Growth taxed at marginal rate + 20% penalty. Worst outcome.`,
+                optimal: false,
               },
               {
                 title: 'School at 20',
@@ -268,30 +261,20 @@ export default function RespMaxPage() {
                 net: netAt20,
                 color: 'green',
                 note: 'Lowest tax rate but smallest balance. 15 fewer years of compound growth.',
+                optimal: false,
               },
               {
-                title: 'MBA at 30',
-                subtitle: 'Enroll at 30, withdraw over 3 years',
-                icon: '🏠',
-                balance: balanceAt30,
-                taxRate: '~35%',
-                taxPaid: taxAt30,
+                title: 'Optimal: MBA at 33',
+                subtitle: 'Maximum growth. Enroll at 33, withdraw over 2 years. No employment income during withdrawals.',
+                icon: '💎',
+                balance: balanceAt33,
+                taxRate: '~30%',
+                taxPaid: taxAt33,
                 cesgKept: true,
-                net: netAt30,
-                color: 'blue',
-                note: 'Good balance of growth and access. Use for home/car. Still working so higher bracket.',
-              },
-              {
-                title: 'Collapse at 35',
-                subtitle: 'Never enrolled in school',
-                icon: '⚠️',
-                balance: balance,
-                taxRate: '~53%',
-                taxPaid: penaltyTax,
-                cesgKept: false,
-                net: netCollapse,
-                color: 'red',
-                note: `CESG (${formatCAD(cesgReturned)}) returned to government. Growth taxed at marginal rate + 20% penalty. Worst outcome.`,
+                net: netAt33,
+                color: 'green',
+                note: 'Latest safe enrollment (1 year buffer before 35). Quit or pause work during withdrawals to stay in lower brackets. Maximum compound time + lowest realistic tax rate.',
+                optimal: true,
               },
             ].map(s => (
               <div key={s.title} className={`rounded-xl border p-5 ${s.optimal ? 'border-green-400 bg-green-50 ring-2 ring-green-400' : s.color === 'green' ? 'border-green-200' : s.color === 'blue' ? 'border-blue-200' : 'border-red-200'}`}>
