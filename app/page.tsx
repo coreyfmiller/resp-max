@@ -122,7 +122,7 @@ export default function RespMaxProfitPage() {
         {/* ROI slider */}
         <div className="flex items-center gap-4 mb-6">
           <label className="text-sm font-medium whitespace-nowrap">Annual Return:</label>
-          <input type="range" min={4} max={12} step={0.5} value={roi} onChange={e => setRoi(Number(e.target.value))} className="flex-1" />
+          <input type="range" min={4} max={20} step={0.5} value={roi} onChange={e => setRoi(Number(e.target.value))} className="flex-1" />
           <span className="text-sm font-bold tnum w-12 text-right">{roi}%</span>
         </div>
 
