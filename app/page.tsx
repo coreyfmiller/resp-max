@@ -270,12 +270,13 @@ export default function RespMaxPage() {
                 subtitle: 'Never enrolled in school',
                 icon: '⚠️',
                 balance: balance,
-                taxRate: `~${effectiveTaxCollapse}%`,
+                taxRate: `~${Math.round((aipTaxPerYear * 3) / growth * 100)}%`,
+                penalty: growth * 0.20,
                 taxPaid: penaltyTax,
                 cesgKept: false,
                 net: netCollapse,
                 color: 'red',
-                note: `CESG (${formatCAD(cesgReturned)}) returned to government. Growth taxed at your marginal rate (~44%) PLUS an additional 20% penalty tax = ~${effectiveTaxCollapse}% combined. This is intentional: CRA penalizes non-educational use.`,
+                note: `CESG (${formatCAD(cesgReturned)}) returned to government. Growth taxed at your marginal rate (~${Math.round((aipTaxPerYear * 3) / growth * 100)}%) PLUS an additional 20% penalty tax = ~${effectiveTaxCollapse}% combined. This is intentional: CRA penalizes non-educational use.`,
                 optimal: false,
               },
               {
@@ -284,6 +285,7 @@ export default function RespMaxPage() {
                 icon: '🎓',
                 balance: balanceAt20,
                 taxRate: `~${effectiveTaxAt20}%`,
+                penalty: 0,
                 taxPaid: taxAt20,
                 cesgKept: true,
                 net: netAt20,
@@ -297,6 +299,7 @@ export default function RespMaxPage() {
                 icon: '💎',
                 balance: balanceAt32,
                 taxRate: `~${effectiveTaxRate}%`,
+                penalty: 0,
                 taxPaid: taxAt32,
                 cesgKept: true,
                 net: netAt32,
@@ -322,11 +325,17 @@ export default function RespMaxPage() {
                     <span className="font-semibold">{formatCAD(s.balance)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Effective Tax Rate</span>
+                    <span className="text-gray-500">Income Tax</span>
                     <span className="font-medium">{s.taxRate}</span>
                   </div>
+                  {s.penalty > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">20% CRA Penalty</span>
+                      <span className="font-medium text-red-600">-{formatCAD(s.penalty)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Tax Paid</span>
+                    <span className="text-gray-500">Total Tax</span>
                     <span className="font-medium text-red-600">-{formatCAD(s.taxPaid)}</span>
                   </div>
                   <div className="flex justify-between">
