@@ -57,8 +57,17 @@ function buildProjection(roi: number) {
   return { rows, totalCESG: Math.round(totalCESG), peakBalance: rows[rows.length - 1].balance }
 }
 
+const PRESETS = [
+  { label: 'S&P 500 (SPY)', roi: 10.5, description: '30-year historical avg' },
+  { label: 'Nasdaq 100 (QQQ)', roi: 14.5, description: '30-year historical avg' },
+  { label: 'Canadian Market (XIU)', roi: 8, description: '25-year historical avg' },
+  { label: 'Conservative (Bonds/GICs)', roi: 4.5, description: 'Low risk' },
+  { label: 'Custom', roi: 0, description: 'Set your own' },
+]
+
 export default function RespMaxProfitPage() {
-  const [roi, setRoi] = useState(8)
+  const [roi, setRoi] = useState(10.5)
+  const [activePreset, setActivePreset] = useState('S&P 500 (SPY)')
   const { rows, totalCESG, peakBalance } = buildProjection(roi)
 
   const totalGrowth = peakBalance - 50000 - totalCESG
@@ -119,11 +128,24 @@ export default function RespMaxProfitPage() {
           </p>
         </div>
 
-        {/* ROI slider */}
-        <div className="flex items-center gap-4 mb-6">
-          <label className="text-sm font-medium whitespace-nowrap">Annual Return:</label>
-          <input type="range" min={4} max={20} step={0.5} value={roi} onChange={e => setRoi(Number(e.target.value))} className="flex-1" />
-          <span className="text-sm font-bold tnum w-12 text-right">{roi}%</span>
+        {/* Investment selection */}
+        <div className="rounded-lg border bg-gray-50 p-4 mb-6 space-y-4">
+          <div className="flex flex-wrap gap-2">
+            {PRESETS.map(p => (
+              <button
+                key={p.label}
+                onClick={() => { if (p.roi > 0) { setRoi(p.roi); setActivePreset(p.label) } else { setActivePreset('Custom') } }}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${activePreset === p.label ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:border-blue-300'}`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium whitespace-nowrap">Annual Return:</label>
+            <input type="range" min={4} max={20} step={0.5} value={roi} onChange={e => { setRoi(Number(e.target.value)); setActivePreset('Custom') }} className="flex-1" />
+            <span className="text-sm font-bold tnum w-12 text-right">{roi}%</span>
+          </div>
         </div>
 
         {/* Table */}
