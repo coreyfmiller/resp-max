@@ -95,7 +95,7 @@ export default function RespMaxPage() {
 
         {/* Investment selection */}
         <div className="rounded-xl border bg-gray-50 p-5 mb-8 space-y-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Investment Vehicle</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Investment Vehicle (Historical Annual Returns)</p>
           <div className="flex flex-wrap gap-2">
             {PRESETS.map(p => (
               <div key={p.label} className="flex items-center gap-1">
