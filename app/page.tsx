@@ -9,7 +9,7 @@ const CESG_LIFETIME_MAX = 7200
 const PRESETS = [
   { label: 'S&P 500 (VFV)', roi: 10.5, mer: 0.09, info: 'Tracks the 500 largest US companies. Includes Apple, Microsoft, Amazon, Google, etc. 30-year average return ~10.5%. VFV trades in CAD on the TSX. MER of 0.09%. Drawdowns: -34% in 2008 (recovered in 4 years), -20% in 2022 (recovered in 2 years), -34% in 2020 COVID crash (recovered in 5 months). Expect a 10-20% drop roughly every 3-5 years. With a 30+ year horizon, every crash has fully recovered.' },
   { label: 'Nasdaq 100 (QQC)', roi: 14.5, mer: 0.25, info: 'Tracks the 100 largest non-financial Nasdaq companies. Heavy tech: Apple, Microsoft, Nvidia, Meta, Google, Amazon, Tesla. 30-year average ~14.5%. QQC trades in CAD on the TSX. MER of 0.25%. Drawdowns: -80% in 2000 dot-com crash (took 15 years to recover), -33% in 2022, -30% in 2020 (recovered in 4 months). Most volatile option. Higher ceiling but rougher ride. Only appropriate if you will not sell during crashes.' },
-  { label: 'Balanced Growth (VGRO)', roi: 8.5, mer: 0.24, info: 'Vanguard Growth ETF. 80% stocks / 20% bonds across Canadian, US, and international markets. 5-year average ~8.5%. Auto-rebalances. MER of 0.24%. Drawdowns: -22% in 2020 (recovered in 6 months), -15% in 2022. The bond allocation cushions crashes but caps upside. Smoothest ride of the three. Good "set and forget" if you want less stress.' },
+  { label: 'Balanced Growth (VGRO)', roi: 7, mer: 0.24, info: 'Vanguard Growth ETF. 80% stocks / 20% bonds across Canadian, US, and international markets. Conservative long-term estimate ~7% (fund launched 2018, limited track record). Auto-rebalances. MER of 0.24%. Drawdowns: -22% in 2020 (recovered in 6 months), -15% in 2022. The bond allocation cushions crashes but caps upside. Smoothest ride of the three. Good "set and forget" if you want less stress.' },
   { label: 'Custom', roi: 0, mer: 0, info: '' },
 ]
 
@@ -227,18 +227,20 @@ export default function RespMaxPage() {
 
             // Scenario 1: School at 20 (withdraw during undergrad over 4 years)
             const balanceAt20 = active.valueAt18
-            const growthAt20 = Math.max(0, balanceAt20 - contributions - cesg)
-            const eapAt20 = growthAt20 + cesg
+            const contributedBy18 = active.rows.find(r => r.age === 18)?.totalContributed ?? contributions
+            const csgBy18 = active.rows.slice(0, 19).reduce((s, r) => s + r.cesg, 0)
+            const growthAt20 = Math.max(0, balanceAt20 - contributedBy18 - csgBy18)
+            const eapAt20 = growthAt20 + csgBy18
             const taxAt20 = calcProgressiveTax(eapAt20 / 4) * 4 // Spread over 4 years as student
             const effectiveTaxAt20 = eapAt20 > 0 ? Math.round((taxAt20 / eapAt20) * 100) : 0
-            const netAt20 = contributions + (eapAt20 - taxAt20)
+            const netAt20 = contributedBy18 + (eapAt20 - taxAt20)
 
             // Scenario 2: Collapse at 35 (no school ever)
             const cesgReturned = cesg
             // AIP: taxed at marginal + 20% penalty
-            // CRA treats AIP as regular income (marginal tax) plus Part X.5 tax (flat 20% on AIP amount)
-            const aipIncomeTax = calcProgressiveTax(growth / 3) * 3 // Progressive income tax spread over 3 years
-            const aipPenalty = growth * 0.20 // Flat 20% additional penalty
+            // Worst case: no RRSP room, must take in 1-2 years. Using 2 years as compromise.
+            const aipIncomeTax = calcProgressiveTax(growth / 2) * 2
+            const aipPenalty = growth * 0.20 // Flat 20% additional penalty (Part X.5 tax)
             const penaltyTax = aipIncomeTax + aipPenalty
             const incomeTaxRate = growth > 0 ? Math.round((aipIncomeTax / growth) * 100) : 0
             const effectiveTaxCollapse = growth > 0 ? Math.round((penaltyTax / growth) * 100) : 0
@@ -296,7 +298,7 @@ export default function RespMaxPage() {
                 cesgKept: true,
                 net: netAt32,
                 color: 'green',
-                note: `Enroll part-time at 32, stay enrolled through 34. ${formatCAD(annualEAP)}/yr EAP income over 3 years (no employment income). 1 year buffer before mandatory close at 35.`,
+                note: `Enroll part-time at 32, stay enrolled through 34. ${formatCAD(annualEAP)}/yr EAP income over 3 years. Tax assumes no employment income during withdrawal years (take leave or go part-time). If working full-time simultaneously, effective rate increases to ~${Math.round((calcProgressiveTax(annualEAP + 60000) * 3) / eapAt32 * 100)}%.`,
                 optimal: true,
               },
             ].sort((a, b) => a.net - b.net)
@@ -346,10 +348,17 @@ export default function RespMaxPage() {
         </div>
 
         {/* Footnotes */}
-        <div className="space-y-2 text-xs text-gray-400 text-center">
+        <div className="space-y-2 text-xs text-gray-400 text-center mt-10">
           <p>{effectiveRoi.toFixed(2)}% effective annual return ({roi}% gross - {mer}% MER) compounded monthly.</p>
           <p>$50,000 lifetime contribution cap. CESG: 20% on first $2,500/yr, $7,200 lifetime max. All strategies contribute exactly $50,000.</p>
           <p>Age 18 = typical post-secondary start. Age 32 = optimal withdrawal window (enroll in qualifying program, extract over 3 tax years).</p>
+          <p>All figures shown in nominal (future) dollars. At 2% inflation, purchasing power is roughly 50% lower over 35 years.</p>
+          <p>VFV holds USD-denominated assets priced in CAD. Long-term currency fluctuations average out but can affect short-term returns.</p>
+        </div>
+
+        {/* Disclaimer */}
+        <div className="mt-8 rounded-lg border border-gray-200 bg-gray-50 p-4 text-xs text-gray-500 leading-relaxed">
+          <strong className="text-gray-700">Disclaimer:</strong> This tool is for educational and illustrative purposes only. It is not financial advice. Past returns do not guarantee future performance. Tax rates are approximations based on 2024 NB combined federal/provincial brackets and may not reflect your specific situation. Consult a qualified financial advisor or CPA before making RESP investment decisions. RESP rules are governed by the Income Tax Act and administered by CRA; confirm current rules at canada.ca.
         </div>
       </div>
     </div>
