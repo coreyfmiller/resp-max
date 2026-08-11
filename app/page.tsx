@@ -217,26 +217,26 @@ export default function RespMaxPage() {
 
             // Scenario 1: School at 20 (withdraw during undergrad over 4 years)
             const balanceAt20 = active.valueAt18
-            const growthAt20 = balanceAt20 - contributions - cesg
+            const growthAt20 = Math.max(0, balanceAt20 - contributions - cesg)
             const eapAt20 = growthAt20 + cesg
             const taxAt20 = eapAt20 * 0.20 // Low bracket as student
-            const netAt20 = balanceAt20 - taxAt20
+            const netAt20 = contributions + (eapAt20 - taxAt20)
 
             // Scenario 2: Collapse at 35 (no school ever)
-            const eapCollapse = growth + cesg
             const cesgReturned = cesg
             const penaltyTax = growth * 0.53 // Marginal + 20% penalty
-            const netCollapse = contributions + (growth - penaltyTax)
+            const netCollapse = contributions + Math.max(0, growth - penaltyTax) // Contributions back tax-free, growth hammered
 
-            // Scenario 3: Optimal (MBA at 33, withdraw 33-34, 1 year buffer before 35)
+            // Scenario 3: Optimal (Enroll at 33, withdraw 33-34, 1 year buffer before 35)
             const balanceAt33 = active.rows.find(r => r.age === 33)?.balance ?? 0
             const growthAt33 = balanceAt33 - contributions - cesg
             const eapAt33 = growthAt33 + cesg
             // Split over 2 years, take year off work to lower bracket
             const taxAt33 = eapAt33 * 0.30 // Lower bracket: no employment income during withdrawal years
-            const netAt33 = balanceAt33 - taxAt33
+            const netAt33 = contributions + (eapAt33 - taxAt33)
 
-            return [
+            // Sort by net cash: lowest to highest
+            const scenarios = [
               {
                 title: 'Collapse at 35',
                 subtitle: 'Never enrolled in school',
@@ -264,8 +264,8 @@ export default function RespMaxPage() {
                 optimal: false,
               },
               {
-                title: 'Optimal: MBA at 33',
-                subtitle: 'Maximum growth. Enroll at 33, withdraw over 2 years. No employment income during withdrawals.',
+                title: 'Enroll at 33, Withdraw by 35',
+                subtitle: 'Maximum growth. Part-time program at 33, withdraw over 2 years.',
                 icon: '💎',
                 balance: balanceAt33,
                 taxRate: '~30%',
@@ -273,10 +273,12 @@ export default function RespMaxPage() {
                 cesgKept: true,
                 net: netAt33,
                 color: 'green',
-                note: 'Latest safe enrollment (1 year buffer before 35). Quit or pause work during withdrawals to stay in lower brackets. Maximum compound time + lowest realistic tax rate.',
+                note: 'Latest safe enrollment (1 year buffer before 35). Pause work during withdrawals to stay in lower brackets. Maximum compound time + lowest realistic tax rate.',
                 optimal: true,
               },
-            ].map(s => (
+            ].sort((a, b) => a.net - b.net)
+
+            return scenarios.map(s => (
               <div key={s.title} className={`rounded-xl border p-5 ${s.optimal ? 'border-green-400 bg-green-50 ring-2 ring-green-400' : s.color === 'green' ? 'border-green-200' : s.color === 'blue' ? 'border-blue-200' : 'border-red-200'}`}>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xl">{s.icon}</span>
@@ -305,7 +307,7 @@ export default function RespMaxPage() {
                   </div>
                   <div className="flex justify-between pt-2 border-t border-gray-100">
                     <span className="font-semibold">Cash in Hand</span>
-                    <span className={`font-bold ${s.color === 'red' ? 'text-red-700' : 'text-green-700'}`}>{formatCAD(s.net)}</span>
+                    <span className="font-bold text-green-700">{formatCAD(s.net)}</span>
                   </div>
                 </div>
                 <p className="text-xs text-gray-400 mt-3">{s.note}</p>
