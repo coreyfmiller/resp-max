@@ -75,7 +75,6 @@ export default function RespMaxPage() {
   const [mer, setMer] = useState(0.09)
   const [activePreset, setActivePreset] = useState('S&P 500 (SPY)')
   const [activeStrategy, setActiveStrategy] = useState('aggressive')
-  const [showInfo, setShowInfo] = useState<string | null>(null)
   const effectiveRoi = roi - mer
 
   const projections = STRATEGIES.map(s => ({
@@ -98,32 +97,19 @@ export default function RespMaxPage() {
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Investment Vehicle (Historical Annual Returns)</p>
           <div className="flex flex-wrap gap-2">
             {PRESETS.map(p => (
-              <div key={p.label} className="flex items-center gap-1">
-                <button
-                  onClick={() => { if (p.roi > 0) { setRoi(p.roi); setMer(p.mer); setActivePreset(p.label) } else { setActivePreset('Custom') } }}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activePreset === p.label ? 'bg-blue-600 text-white shadow-sm' : 'bg-white border border-gray-200 text-gray-700 hover:border-blue-300'}`}
-                >
-                  {p.label}
-                  {p.roi > 0 && <span className="ml-1 text-xs opacity-70">{p.roi}%</span>}
-                </button>
-                {p.info && (
-                  <button
-                    onClick={() => setShowInfo(showInfo === p.label ? null : p.label)}
-                    className="w-6 h-6 rounded-full border border-gray-300 text-gray-400 text-xs font-bold hover:border-blue-400 hover:text-blue-500 transition flex items-center justify-center"
-                    aria-label={`Info about ${p.label}`}
-                  >
-                    i
-                  </button>
-                )}
-              </div>
+              <button
+                key={p.label}
+                onClick={() => { if (p.roi > 0) { setRoi(p.roi); setMer(p.mer); setActivePreset(p.label) } else { setActivePreset('Custom') } }}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${activePreset === p.label ? 'bg-blue-600 text-white shadow-sm' : 'bg-white border border-gray-200 text-gray-700 hover:border-blue-300'}`}
+              >
+                {p.label}
+                {p.roi > 0 && <span className="ml-1 text-xs opacity-70">{p.roi}%</span>}
+              </button>
             ))}
           </div>
-          {showInfo && (
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900 leading-relaxed">
-              <div className="flex justify-between items-start gap-2">
-                <p>{PRESETS.find(p => p.label === showInfo)?.info}</p>
-                <button onClick={() => setShowInfo(null)} className="text-blue-400 hover:text-blue-600 text-lg leading-none shrink-0">&times;</button>
-              </div>
+          {activePreset !== 'Custom' && PRESETS.find(p => p.label === activePreset)?.info && (
+            <div className="rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900 leading-relaxed">
+              {PRESETS.find(p => p.label === activePreset)?.info}
             </div>
           )}
           <div className="flex items-center gap-4">
