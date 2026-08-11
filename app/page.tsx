@@ -117,6 +117,9 @@ export default function RespMaxPage() {
             <span className="text-sm font-bold tnum w-20 text-right">{effectiveRoi.toFixed(2)}% net</span>
           </div>
           <p className="text-xs text-gray-400">{roi}% gross return - {mer}% MER = {effectiveRoi.toFixed(2)}% effective annual return</p>
+          <div className="rounded-md bg-amber-50 border border-amber-200 p-3 text-xs text-amber-900">
+            <strong>Why ETFs?</strong> Canadian mutual funds charge 1.5-2.5% MER annually. These ETFs charge 0.09-0.24%. On a $500K portfolio, that's the difference between paying $750/yr (ETF) vs $10,000/yr (mutual fund) in fees. Over 30 years, mutual fund fees consume $150,000+ of your returns. The fund performs identically, you just keep more of it.
+          </div>
         </div>
 
         {/* Strategy comparison cards */}
