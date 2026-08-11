@@ -58,17 +58,19 @@ function buildProjection(roi: number) {
 }
 
 const PRESETS = [
-  { label: 'S&P 500 (SPY)', roi: 10.5, description: '30-year historical avg' },
-  { label: 'Nasdaq 100 (QQQ)', roi: 14.5, description: '30-year historical avg' },
-  { label: 'Canadian Market (XIU)', roi: 8, description: '25-year historical avg' },
-  { label: 'Conservative (Bonds/GICs)', roi: 4.5, description: 'Low risk' },
-  { label: 'Custom', roi: 0, description: 'Set your own' },
+  { label: 'S&P 500 (SPY)', roi: 10.5, mer: 0.09, description: '30-year historical avg' },
+  { label: 'Nasdaq 100 (QQQ)', roi: 14.5, mer: 0.20, description: '30-year historical avg' },
+  { label: 'Canadian Market (XIU)', roi: 8, mer: 0.18, description: '25-year historical avg' },
+  { label: 'Conservative (Bonds/GICs)', roi: 4.5, mer: 0.10, description: 'Low risk' },
+  { label: 'Custom', roi: 0, mer: 0, description: 'Set your own' },
 ]
 
 export default function RespMaxProfitPage() {
   const [roi, setRoi] = useState(10.5)
+  const [mer, setMer] = useState(0.09)
   const [activePreset, setActivePreset] = useState('S&P 500 (SPY)')
-  const { rows, totalCESG, peakBalance } = buildProjection(roi)
+  const effectiveRoi = roi - mer
+  const { rows, totalCESG, peakBalance } = buildProjection(effectiveRoi)
 
   const totalGrowth = peakBalance - 50000 - totalCESG
   const valueAt18 = rows.find(r => r.age === 18)?.balance ?? 0
@@ -134,7 +136,7 @@ export default function RespMaxProfitPage() {
             {PRESETS.map(p => (
               <button
                 key={p.label}
-                onClick={() => { if (p.roi > 0) { setRoi(p.roi); setActivePreset(p.label) } else { setActivePreset('Custom') } }}
+                onClick={() => { if (p.roi > 0) { setRoi(p.roi); setMer(p.mer); setActivePreset(p.label) } else { setActivePreset('Custom') } }}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${activePreset === p.label ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:border-blue-300'}`}
               >
                 {p.label}
@@ -145,6 +147,9 @@ export default function RespMaxProfitPage() {
             <label className="text-sm font-medium whitespace-nowrap">Annual Return:</label>
             <input type="range" min={4} max={20} step={0.5} value={roi} onChange={e => { setRoi(Number(e.target.value)); setActivePreset('Custom') }} className="flex-1" />
             <span className="text-sm font-bold tnum w-12 text-right">{roi}%</span>
+          </div>
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>MER: {mer}% | Effective return after fees: {effectiveRoi.toFixed(2)}%</span>
           </div>
         </div>
 
@@ -177,7 +182,7 @@ export default function RespMaxProfitPage() {
         </div>
 
         <p className="text-xs text-muted-foreground text-center mt-4">
-          {roi}% annual return compounded monthly. $50,000 lifetime contribution cap. CESG only earned during contribution years.
+          {effectiveRoi.toFixed(2)}% effective annual return ({roi}% gross - {mer}% MER) compounded monthly. $50,000 lifetime contribution cap. CESG only earned during contribution years.
         </p>
       </div>
     </div>
